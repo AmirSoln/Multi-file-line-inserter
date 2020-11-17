@@ -1,10 +1,9 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
-using System.Text;
-using System.Text.Json;
 
 namespace MultiFileLineInserter
 {
@@ -60,14 +59,14 @@ namespace MultiFileLineInserter
             }
             using (var sw = new StreamWriter(file))
             {
-                sw.Write(JsonSerializer.Serialize(fileContent));
+                sw.Write(JsonConvert.SerializeObject(fileContent, Formatting.Indented));
             }
         }
 
         private Dictionary<string,object> ReadFile(string path)
         {
             var json = File.ReadAllText(path);
-            return JsonSerializer.Deserialize<Dictionary<string, object>>(json);
+            return JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
         }
 
     }
