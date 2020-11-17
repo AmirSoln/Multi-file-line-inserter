@@ -1,13 +1,12 @@
-﻿using System;
+﻿using McMaster.Extensions.CommandLineUtils;
 
 namespace MultiFileLineInserter
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-            Console.WriteLine("Welcome");
+            return CommandLineApplication.Execute<FileInserter>(args);
         }
     }
 }
