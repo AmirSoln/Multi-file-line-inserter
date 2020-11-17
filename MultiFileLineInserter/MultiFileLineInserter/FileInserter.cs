@@ -22,48 +22,61 @@ namespace MultiFileLineInserter
         [Required]
         public string Value { get; set; }
 
-
+        public Dictionary<string, string> FileData { get; set; }
 
         private void OnExecute()
         {
-            var fileFound = false;
-            if (SourceDir.Trim().Length == 0)
-            {
-                throw new Exception("SourceDir must contain a path");
-            }
-
+            FileData = new Dictionary<string, string>();
             var files = Directory.GetFiles(SourceDir);
 
             foreach (var file in files)
             {
                 if (file.EndsWith(".json"))
                 {
-                    fileFound = true;
-                    InsertToFile(file);
+                    var content = "";
+                    var result = GetNewFileContent(file, ref content);
+                    if (!result)
+                    {
+                        Console.WriteLine("There was a problem with one of the files!");
+                        return;
+                    }
+                    FileData.Add(file, content);
                 }
             }
 
-            if (!fileFound)
+            if (FileData.Count == 0)
             {
                 Console.WriteLine("No .json files found");
-            }
-        }
-
-        private void InsertToFile(string file)
-        {
-            var fileContent = ReadFile(file);
-            if(!fileContent.TryAdd(Key, Value))
-            {
-                Console.WriteLine("Error inserting values into file. Check your key");
                 return;
             }
-            using (var sw = new StreamWriter(file))
+
+            foreach (var data in FileData)
             {
-                sw.Write(JsonConvert.SerializeObject(fileContent, Formatting.Indented));
+                File.WriteAllText(data.Key, data.Value);
+                Console.WriteLine($"The key:\"{Key}\" was added sucssesfully to the File:{data.Key} with the value: \"{Value}\"");
             }
+
         }
 
-        private Dictionary<string,object> ReadFile(string path)
+        private bool GetNewFileContent(string file, ref string content)
+        {
+            var fileContent = ReadFile(file);
+            if (fileContent.ContainsKey(Key))
+            {
+                Console.WriteLine("Error inserting values into file. Check your key");
+                return false;
+            }
+            if (!fileContent.TryAdd(Key, Value))
+            {
+                Console.WriteLine("Error inserting values into file.");
+                return false;
+            }
+
+            content = JsonConvert.SerializeObject(fileContent, Formatting.Indented);
+            return true;
+        }
+
+        private Dictionary<string, object> ReadFile(string path)
         {
             var json = File.ReadAllText(path);
             return JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
