@@ -1,8 +1,10 @@
 ﻿using McMaster.Extensions.CommandLineUtils;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 
 namespace MultiFileLineInserter
 {
@@ -51,26 +53,21 @@ namespace MultiFileLineInserter
         private void InsertToFile(string file)
         {
             var fileContent = ReadFile(file);
-            fileContent.Append(",\n\t").Append($"\"{Key}\":\"{Value}\"").Append("\n}");
+            if(!fileContent.TryAdd(Key, Value))
+            {
+                Console.WriteLine("Error inserting values into file. Check your key");
+                return;
+            }
             using (var sw = new StreamWriter(file))
             {
-                sw.Write(fileContent.ToString());
+                sw.Write(JsonSerializer.Serialize(fileContent));
             }
         }
 
-        private StringBuilder ReadFile(string path)
+        private Dictionary<string,object> ReadFile(string path)
         {
-            //open the file
-            var retval = new StringBuilder();
-            using (var sr = new StreamReader(path))
-            {
-                // Read the stream as a string, and write the string to the console.
-                retval.Append(sr.ReadToEnd());
-                retval.Length -= 2;
-            }
-
-            //return the file as string
-            return retval;
+            var json = File.ReadAllText(path);
+            return JsonSerializer.Deserialize<Dictionary<string, object>>(json);
         }
 
     }
