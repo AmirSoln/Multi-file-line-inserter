@@ -7,7 +7,7 @@ using System.IO;
 
 namespace MultiFileLineInserter
 {
-    [Command(Description = "Multi file content inserter app")]
+    [Command(Description = "Multi file content inserter app", UnrecognizedArgumentHandling = UnrecognizedArgumentHandling.Throw)]
     public class FileInserter
     {
         [Option(Description = "Directory of json the files", ShortName = "d")]
@@ -78,8 +78,7 @@ namespace MultiFileLineInserter
 
         private Dictionary<string, object> ReadFile(string path)
         {
-            var json = File.ReadAllText(path);
-            return JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+            return JsonConvert.DeserializeObject<Dictionary<string, object>>(File.ReadAllText(path));
         }
 
     }
